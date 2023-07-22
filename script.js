@@ -1,18 +1,41 @@
-// codingan menjadi modular dan menerapkan async await
+// ERROR HANDLING PROMISE => .THEN() .CATCH()
+// ERROR HANDLING ASYNC AWAIT => TRY{} .CATCH() {}
+// ERROR HANDLING FETCH, hasil error fetch akan di lempar ke .catch nya async await untuk menampilkan errornya => throw new Error()
 const btnSearch = document.querySelector(".kirim");
 btnSearch.addEventListener("click", async function () {
   const inputKey = document.querySelector(".inputKey");
   inputKey.focus();
 
-  const keySearch = inputKey.value;
-  const movies = await getInputKey(keySearch);
-  uIMovie(movies);
+  try {
+    const keySearch = inputKey.value;
+    const movies = await getInputKey(keySearch);
+    uIMovie(movies);
+  } catch (error) {
+    // console.log error iki menampilkan error teko try karo nagkep hasil error teko throw new Error / FETCH
+    console.log(error);
+  }
 });
 
 function getInputKey(keySearch) {
   return fetch("http://www.omdbapi.com/?apikey=bba7d0dd&s=" + keySearch)
-    .then((movies) => movies.json())
-    .then((movies) => movies.Search);
+    .then((movies) => {
+      // .ok dan .statusText di dapat dari console.log(movies) metu isine
+      if (!movies.ok) {
+        // throw new Error iki gawe mendeteksi error URL FETCH tok contoh link kurang lengkap / kurang huruf / salah
+        throw new Error(movies.statusText);
+      }
+      // kudu gawe RETURN nek gak di gawe melbune ning .catch error asynt await
+      return movies.json();
+    })
+    .then((movies) => {
+      // REsponse ne R e, Error ne E e, False ne F e gede nek ra percoyo check gawe console.log(movies)
+      if (movies.Response === "False") {
+        // throw ne Error iki gawe mendeteksi error saat mengisi search ono gak isinine contoh pas search kosong d enter / key kurang huruf
+        throw new Error(movies.Error);
+      }
+      // ojo lali return nek lali ngetik keyword d search e bener isine ra muncul
+      return movies.Search;
+    });
 }
 
 function uIMovie(movies) {
@@ -69,7 +92,7 @@ function kartuDetail(m) {
                             <ul class="list-group list-group-flush">
                                 <li class="list-group-item"><h4>${m.Title} (${m.Year})</h4></li>
                                 <li class="list-group-item"><strong>Director:</strong> ${m.Director}</li>
-                                <li class="list-group-item"><strong>Writer:'kb'/strong> ${m.Writer}</li>
+                                <li class="list-group-item"><strong>Writer:</strong> ${m.Writer}</li>
                                 <li class="list-group-item"><strong>Actors:</strong> ${m.Actors}</li>
                                 <li class="list-group-item">
                                 <strong>Plot:</strong><br />
